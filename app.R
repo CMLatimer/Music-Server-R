@@ -15,6 +15,7 @@ library(lubridate)
 library(hms)
 library(chron)
 library(stringr)
+library(shinyjs)
 
 ####################################################-Functions-##########################################################################
 
@@ -42,6 +43,8 @@ convertTimeForChron <- function(time){
 
 ui <- fluidPage(
   
+  useShinyjs(),
+  
   titlePanel("Old Faithful Geyser Data"),
    
   sidebarLayout(
@@ -62,7 +65,7 @@ ui <- fluidPage(
 ########################################################-Server-#############################################################################
 
 server <- function(input, output) {
-  rv <- reactiveValues(video = 0) 
+  rv <- reactiveValues(video = 0, videoFinished = 0, videoDownloaded = 0) 
   file.remove('MainVideo.mp4')
   file.remove('www/MainVideo.mp4')
   system('www/youtube-dl.exe https://www.youtube.com/watch?v=i_cTTgkNdVY -f mp4 -o MainVideo.mp4')
@@ -93,15 +96,25 @@ server <- function(input, output) {
     system(ydlcall2(), intern = TRUE) -> tmp
     print(tmp)
     oldDat <- loadVideoData()
-    newDat <- data.frame('Title' = tmp[1], 'Duration' = (chron(times = convertTimeForChron(tmp[2])) %>% as.numeric)*24*60*60, stringsAsFactors = F)
+    newDat <- data.frame('Title' = tmp[1], 'Duration' = ((chron(times = convertTimeForChron(tmp[2])) %>% as.numeric)*24*60*60), stringsAsFactors = F)
     oldDat[,2:3] %>% rbind(newDat) -> fullDat
     saveVideoData(fullDat)
     print(fullDat)
     file.move('MainVideo.mp4', 'www', overwrite = TRUE)
-    rv$video <- rv$video + 1
+    #rv$video <- rv$video + 1
+    #print(tmp[2])
+    print((chron(times = convertTimeForChron(tmp[2])) %>% as.numeric)*24*60*60)
+    print(loadVideoData()[dim(loadVideoData())[1],3])
+    delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
+    #print('HI')
+    })
   })
     
-    
+  observeEvent(rv$videoFinished, {print('Finished')
+    rv$video <- rv$video + 1
+    delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
+    })
+  }) 
    
   output$Video <- renderUI({
     rv$video
