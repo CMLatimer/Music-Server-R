@@ -17,6 +17,15 @@ library(chron)
 library(stringr)
 library(shinyjs)
 
+#install.packages('shiny')
+#install.packages('filesstrings')
+#install.packages('tidyr')
+#install.packages('readr')
+#install.packages('lubridate')
+#install.packages('hms')
+#install.packages('chron')
+#install.packages('stringr')
+#install.packages('shinyjs')
 ####################################################-Functions-##########################################################################
 
 videoData <- data.frame('Title' = "What You Don't Know - Buses", 'Duration' = 13, stringsAsFactors = F)
@@ -65,20 +74,18 @@ ui <- fluidPage(
 ########################################################-Server-#############################################################################
 
 server <- function(input, output) {
-  rv <- reactiveValues(video = 0, videoFinished = 0, videoDownloaded = 0) 
+  rv <- reactiveValues(video = 0, videoFinished = 0, videoDownloaded = 0, numberVideos = 1) 
   file.remove('MainVideo.mp4')
   file.remove('www/MainVideo.mp4')
   system('www/youtube-dl.exe https://www.youtube.com/watch?v=i_cTTgkNdVY -f mp4 -o MainVideo.mp4')
   file.move('MainVideo.mp4', 'www', overwrite = TRUE)
 
   ydlcall <- reactive({
-    sprintf('www/youtube-dl.exe %s -f mp4 -o MainVideo.mp4', input$URL)
-    #input$URL
+    sprintf('www/youtube-dl.exe %s -f mp4 -o MainVideo%s.mp4', input$URL, rv$numberVideos)
   })
    
   ydlcall2 <- reactive({
     sprintf('www/youtube-dl.exe %s --get-title --get-duration', input$URL)
-    #input$URL
   })
    
   reactiveVideoData <- reactive({
@@ -89,30 +96,22 @@ server <- function(input, output) {
   observeEvent(input$Submit, {
     file.remove('www/MainVideo.mp4')
     file.remove('www/MainVideo.mp4')
-    #print(ydlcall())
     system(ydlcall())
-    print('Test')
-    print(ydlcall2())
     system(ydlcall2(), intern = TRUE) -> tmp
-    print(tmp)
     oldDat <- loadVideoData()
     newDat <- data.frame('Title' = tmp[1], 'Duration' = ((chron(times = convertTimeForChron(tmp[2])) %>% as.numeric)*24*60*60), stringsAsFactors = F)
     oldDat[,2:3] %>% rbind(newDat) -> fullDat
     saveVideoData(fullDat)
-    print(fullDat)
-    file.move('MainVideo.mp4', 'www', overwrite = TRUE)
-    #rv$video <- rv$video + 1
-    #print(tmp[2])
-    print((chron(times = convertTimeForChron(tmp[2])) %>% as.numeric)*24*60*60)
-    print(loadVideoData()[dim(loadVideoData())[1],3])
+    file.move(sprintf('MainVideo%s.mp4', rv$numberVideos), 'www', overwrite = TRUE)
+    file.copy(sprintf('www/MainVideo%s.mp4', rv$numberVideos), 'www/MainVideo.mp4', overwrite = TRUE)
+    rv$numberVideos <- rv$numberVideos + 1
     delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
-    #print('HI')
     })
   })
     
   observeEvent(rv$videoFinished, {print('Finished')
     rv$video <- rv$video + 1
-    delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
+    delay((chron(times = loadVideoData()[rv$numberVideos,3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
     })
   }) 
    
