@@ -48,6 +48,10 @@ convertTimeForChron <- function(time){
   add2 <- str_sub(add, 1, 8 - len)
   paste0(add2, time) %>% return()
 }
+
+emptyVideoCache <- function(){
+  do.call(file.remove, list(list.files('www', pattern = 'o\\d', full.names = T)))
+}
 ########################################################-UI-#############################################################################
 
 ui <- fluidPage(
@@ -64,6 +68,7 @@ ui <- fluidPage(
 
     mainPanel(
       actionButton(inputId = 'Submit', 'Submit'),
+      actionButton(inputId = 'EmergencyStart', 'Emergency Start'),
       textInput(inputId = 'URL', 'URL', value = 'https://www.youtube.com/watch?v=i_cTTgkNdVY'),
       uiOutput('Video')
     )
@@ -105,10 +110,14 @@ server <- function(input, output) {
     file.move(sprintf('MainVideo%s.mp4', rv$numberVideos), 'www', overwrite = TRUE)
     file.copy(sprintf('www/MainVideo%s.mp4', rv$numberVideos), 'www/MainVideo.mp4', overwrite = TRUE)
     rv$numberVideos <- rv$numberVideos + 1
-    delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
-    })
+    #delay((chron(times = loadVideoData()[dim(loadVideoData())[1],3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
+    #})
   })
-    
+  
+  observeEvent(input$EmergencyStart, {
+    rv$video <- rv$video + 1
+  })
+  
   observeEvent(rv$videoFinished, {print('Finished')
     rv$video <- rv$video + 1
     delay((chron(times = loadVideoData()[rv$numberVideos,3] %>% as.hms %>% as.character()) %>% as.numeric)*24*60*60*1000, {rv$videoFinished <- rv$videoFinished + 1
