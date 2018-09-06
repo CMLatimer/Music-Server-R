@@ -82,15 +82,15 @@ server <- function(input, output) {
   rv <- reactiveValues(video = 0, videoFinished = 0, videoDownloaded = 0, numberVideos = 1) 
   file.remove('MainVideo.mp4')
   file.remove('www/MainVideo.mp4')
-  system('youtube-dl https://www.youtube.com/watch?v=i_cTTgkNdVY -f mp4 -o MainVideo.mp4')
+  system('www/youtube-dl.exe https://www.youtube.com/watch?v=i_cTTgkNdVY -f mp4 -o MainVideo.mp4')
   file.move('MainVideo.mp4', 'www', overwrite = TRUE)
 
   ydlcall <- reactive({
-    sprintf('youtube-dl %s -f mp4 -o MainVideo%s.mp4', input$URL, rv$numberVideos)
+    sprintf('www/youtube-dl.exe %s -f mp4 -o MainVideo%s.mp4', input$URL, rv$numberVideos)
   })
    
   ydlcall2 <- reactive({
-    sprintf('youtube-dl %s --get-title --get-duration', input$URL)
+    sprintf('www/youtube-dl.exe %s --get-title --get-duration', input$URL)
   })
    
   reactiveVideoData <- reactive({
