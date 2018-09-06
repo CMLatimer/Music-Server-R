@@ -76,7 +76,7 @@ ui <- dashboardPage(
     tabItems(
       tabItem(tabName = 'Video',
         fluidRow(
-          box(
+          box(width = NULL,
             actionButton(inputId = 'Submit', 'Submit'),
             actionButton(inputId = 'EmergencyStart', 'Emergency Start'),
             textInput(inputId = 'URL', 'URL', value = 'https://www.youtube.com/watch?v=i_cTTgkNdVY'),
@@ -143,7 +143,7 @@ server <- function(input, output) {
    
   output$Video <- renderUI({
     rv$video
-    tags$video(id="video2", type = "video/mp4",src = 'MainVideo.mp4', width = '1280px', height = '720px', controls = NA, autoplay = TRUE)
+    tags$video(id="video2", type = "video/mp4",src = 'MainVideo.mp4', width = '100%', height = '100%', controls = NA, autoplay = TRUE)
   })
    
   output$videoData <- renderDataTable({rv$video
