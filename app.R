@@ -16,6 +16,8 @@ library(hms)
 library(chron)
 library(stringr)
 library(shinyjs)
+library(shinyjqui)
+library(shinydashboard)
 
 #install.packages('shiny')
 #install.packages('filesstrings')
@@ -26,6 +28,8 @@ library(shinyjs)
 #install.packages('chron')
 #install.packages('stringr')
 #install.packages('shinyjs')
+#devtools::install_github("yang-tang/shinyjqui")
+#install.packages("shinydashboard")
 ####################################################-Functions-##########################################################################
 
 videoData <- data.frame('Title' = "What You Don't Know - Buses", 'Duration' = 13, stringsAsFactors = F)
@@ -54,25 +58,38 @@ emptyVideoCache <- function(){
 }
 ########################################################-UI-#############################################################################
 
-ui <- fluidPage(
+ui <- dashboardPage(
   
-  useShinyjs(),
+  dashboardHeader(
+    title = "Old Faithful Geyser Data"
+  ),
   
-  titlePanel("Old Faithful Geyser Data"),
-   
-  sidebarLayout(
-    sidebarPanel(
-      dataTableOutput('videoData')
-    ),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem('Video', tabName = 'Video'),
+      menuItem('Data', tabName = 'Data')
+    )
+  ),
       
 
-    mainPanel(
-      actionButton(inputId = 'Submit', 'Submit'),
-      actionButton(inputId = 'EmergencyStart', 'Emergency Start'),
-      textInput(inputId = 'URL', 'URL', value = 'https://www.youtube.com/watch?v=i_cTTgkNdVY'),
-      uiOutput('Video')
+  dashboardBody(
+    tabItems(
+      tabItem(tabName = 'Video',
+        fluidRow(
+          box(
+            actionButton(inputId = 'Submit', 'Submit'),
+            actionButton(inputId = 'EmergencyStart', 'Emergency Start'),
+            textInput(inputId = 'URL', 'URL', value = 'https://www.youtube.com/watch?v=i_cTTgkNdVY'),
+            jqui_draggable(uiOutput('Video'))
+          )
+        )
+      ),
+      tabItem(tabName = 'Data',
+        dataTableOutput('videoData')      
+      )
     )
-  )
+  ),
+  useShinyjs()
   
 )
 
@@ -126,7 +143,7 @@ server <- function(input, output) {
    
   output$Video <- renderUI({
     rv$video
-    tags$video(id="video2", type = "video/mp4",src = 'MainVideo.mp4', controls = NA, autoplay = TRUE)
+    tags$video(id="video2", type = "video/mp4",src = 'MainVideo.mp4', width = '1280px', height = '720px', controls = NA, autoplay = TRUE)
   })
    
   output$videoData <- renderDataTable({rv$video
