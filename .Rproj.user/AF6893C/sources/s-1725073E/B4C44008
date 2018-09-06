@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1535752097442.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "B4C44008",
+    "lastKnownWriteTime" : 1535756173,
+    "last_content_update" : 1535756173795,
+    "path" : "D:/R Scripts/Music-Server-R/app.R",
+    "project_path" : "app.R",
+    "properties" : {
+        "cursorPosition" : "116,5",
+        "scrollLine" : "71"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
